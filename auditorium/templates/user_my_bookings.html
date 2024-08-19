@@ -72,12 +72,12 @@
                         <td>{{ booking.card_number }}</td>
                         <td>{{ booking.final_price }}</td>
                         <td>
-                            {% if booking.date_booked > today %}
-                                <button class="btn btn-danger" onclick="cancelBooking({{ booking.id }})">Cancel</button>
-                            {% elif booking.date_booked <= today %}
+                            {% if booking.date_booked <= today %}
                                 <button class="btn btn-primary" onclick="showFeedbackForm({{ booking.id }})">Feedback</button>
                             {% elif booking.is_canceled %}
                                 <span class="text-muted">Booking Canceled</span>
+                            {% elif booking.date_booked > today %}
+                                <button class="btn btn-danger" onclick="cancelBooking({{ booking.id }})">Cancel</button>
                             {% endif %}
                         </td>
                     </tr>

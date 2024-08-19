@@ -528,26 +528,19 @@ def feedback(request, booking_id):
 
     return JsonResponse({'success': False, 'message': 'Invalid request method.'})
     
-@login_required
 def cancel_booking(request, booking_id):
-    try:
-        booking = BookingHistory.objects.get(id=booking_id, user=request.user)
-        if not booking.is_canceled:
-            original_price = booking.final_price / Decimal('0.98')
-            refund_amount = booking.final_price * Decimal('0.98')
-            auditorium_amount = booking.final_price - refund_amount
+    booking = get_object_or_404(BookingHistory, id=booking_id)
+    
+    # Calculate refund and auditorium earnings
+    refund_amount = booking.final_price * Decimal('0.98')
+    auditorium_earnings = booking.final_price * Decimal('0.02')
 
-            # Update the booking status
-            booking.is_canceled = True
-            booking.save()
+    # Update the final_price to reflect the refund
+    booking.final_price = refund_amount
+    booking.is_canceled = True
+    booking.save()
 
-            # Logic to handle refund and admin amount can be added here
+    # Optional: You can display a message to the user
+    messages.success(request, f'Booking canceled. You have been refunded {refund_amount}. The auditorium earns {auditorium_earnings}.')
 
-            messages.success(request, 'Booking canceled successfully.')
-        else:
-            messages.warning(request, 'This booking has already been canceled.')
-
-    except BookingHistory.DoesNotExist:
-        messages.error(request, 'Booking not found.')
-
-    return redirect('user_my_bookings')    
+    return redirect('user_my_bookings')      
