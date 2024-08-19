@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auditorium Details</title>
+    <style>
+        /* Your styles */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+            color: #333;
+        }
+        .container {
+            width: 80%;
+            margin: 20px auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        h2 {
+            font-size: 24px;
+            margin-top: 30px;
+        }
+        p {
+            font-size: 18px;
+            margin: 5px 0;
+        }
+        .feature-checkbox {
+            margin: 10px 0;
+            display: flex;
+            align-items: center;
+        }
+        .feature-checkbox input {
+            margin-right: 10px;
+            transform: scale(1.2);
+        }
+        .final-price {
+            font-weight: bold;
+            font-size: 24px;
+            margin-top: 20px;
+            color: #d9534f;
+        }
+        .btn-container {
+            margin-top: 20px;
+        }
+        .back-btn {
+            display: inline-block;
+            background: #df3232;
+            color: #000000;
+            padding: 10px 20px;
+            text-decoration: none;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        .back-btn:hover {
+            background-color: #ed6e6e;
+        }
+        .request-btn {
+            display: inline-block;
+            background: #5cb85c;
+            color: #fff;
+            padding: 10px 20px;
+            text-decoration: none;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .request-btn:hover {
+            background-color: #4cae4c;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>{{ auditorium.user.username }}</h1>
+        <p>Date: <span id="selected-date">{{ date }}</span></p>
+        <p>Price: Rs <span id="base-price">{{ auditorium.price }}</span></p>
+        <p>Location: {{ auditorium.location }}</p>
+        <p>Capacity: {{ auditorium.capacity }}</p>
+
+        <form method="POST" action="{% url 'auditorium_details' auditorium.id %}">
+            {% csrf_token %}
+            <div class="btn-container">
+                <h2>Features</h2>
+                <div id="features">
+                    {% for feature in features %}
+                    <div class="feature-checkbox" >
+                        <input type="checkbox" id="feature-{{ feature.id }}" data-amount="{{ feature.amount }}" name="features" value="{{ feature.id }}">
+                        <label for="feature-{{ feature.id }}">{{ feature.name }} (+ Rs {{ feature.amount }})</label>
+                    </div>
+                    {% endfor %}
+                </div>
+                <a class="back-btn" href="{% url 'user_index' %}">Cancel</a>
+                <!-- Use a hidden input field to store the selected date -->
+                <input type="hidden" id="date-input" name="date" value="{{ date }}">
+                <input type="hidden" name="final_price" id="final_price_input" value="{{ auditorium.price }}">
+                <button type="submit" class="request-btn">Request Auditorium</button>
+            </div>
+        </form>
+        <div class="final-price">
+            Grand Total: Rs <span id="final-price">{{ auditorium.price }}</span>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var basePrice = parseFloat(document.getElementById('base-price').textContent);
+            var finalPriceElement = document.getElementById('final-price');
+            var finalPriceInput = document.getElementById('final_price_input');
+            var selectedDateElement = document.getElementById('selected-date');
+            var dateInput = document.getElementById('date-input');
+
+            console.log('Base Price:', basePrice); // Debugging statement
+
+            document.querySelectorAll('.feature-checkbox input').forEach(function(checkbox) {
+                checkbox.addEventListener('change', function() {
+                    var finalPrice = basePrice;
+                    console.log('Initial Final Price:', finalPrice); // Debugging statement
+
+                    document.querySelectorAll('.feature-checkbox input:checked').forEach(function(checkedBox) {
+                        var featureAmount = parseFloat(checkedBox.getAttribute('data-amount'));
+                        console.log('Adding Feature Amount:', featureAmount); // Debugging statement
+                        finalPrice += featureAmount;
+                    });
+
+                    console.log('Updated Final Price:', finalPrice); // Debugging statement
+                    finalPriceElement.textContent = finalPrice.toFixed(2);
+                    finalPriceInput.value = finalPrice.toFixed(2);
+
+        
+                });
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,339 @@
+
+<!-- user_index.html -->
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <title>Event Management</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+    <link rel='stylesheet' href='http://fonts.googleapis.com/css?family=PT+Sans'>
+    <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Droid+Serif:regular,bold"/>
+    <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Alegreya+Sans:regular,italic,bold,bolditalic"/>
+    <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Nixie+One:regular,italic,bold,bolditalic"/>
+    <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Alegreya+SC:regular,italic,bold,bolditalic"/>
+    <link rel="stylesheet" href="../static/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../static/css/font-awesome.min.css">
+    <link rel="stylesheet" href="../static/css/style.css" media="screen"/>
+    <style>
+        .auditorium-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center; /* Center tiles horizontally */
+    margin-top: -250px; /* Adjust this value to move the container up */
+    padding: 20px;
+    position: relative;
+    z-index: 1; /* Ensure it's above other content */
+    background-color: #fff; /* White background for the container */
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+.auditorium-tile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 270px; /* Adjust width as needed */
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    margin: 10px;
+    padding: 10px;
+    text-align: center;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    background-color: #fff; /* White background for the tiles */
+}
+.auditorium-tile:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+}
+.auditorium-tile img {
+    width: 100%;
+    height: 60%;
+    border-bottom: 1px solid #ddd;
+    border-radius: 5px 5px 0 0;
+}
+.auditorium-tile h3 {
+    margin: 10px 0;
+    font-size: 1.2em;
+    color: #333;
+}
+.auditorium-tile p {
+    margin: 5px 0;
+    color: #555;
+}
+.auditorium-tile a, .auditorium-tile button {
+    margin-top: 10px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 15px;
+    text-decoration: none;
+    cursor: pointer;
+    font-size: 1em;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+}
+.auditorium-tile a:hover, .auditorium-tile button:hover {
+    background-color: #0056b3;
+    transform: scale(1.05);
+}
+.auditorium-tile:hover {
+    background-color: rgb(174, 255, 204);
+}
+        .calendar {
+            font-family: Arial, sans-serif;
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 20px;
+            font-size: 18px;
+        }
+        .calendar th, .calendar td {
+            border: 1px solid #dddddd;
+            text-align: center;
+            padding: 10px;
+            height: 40px;
+            cursor: pointer;
+        }
+        .calendar th {
+            background-color: #f2f2f2;
+        }
+        .today {
+            background-color: #ffff99;
+            font-weight: bold;
+            border-radius: 50%;
+        }
+        .booked {
+            background-color: #ff9999;
+        }
+        .past-date {
+            color: #cccccc;
+            cursor: not-allowed;
+        }
+        .date-picker-container {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .date-picker-container label, .date-picker-container input, .date-picker-container button {
+            font-size: 16px;
+            margin-right: 10px;
+        }
+        .back-btn {
+            display: inline-block;
+            background: #333;
+            color: #fff;
+            padding: 10px 20px;
+            text-decoration: none;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+            margin-left: 20px;
+        }
+        .back-btn:hover {
+            background-color: rgb(180, 180, 180);
+            color: #333;
+        }
+			#header.header-wrapper {
+	background: url(../images/energetic-dance-floor.jpg) no-repeat center center;
+	background-size: cover;
+	display: table;
+	height: 100vh;
+	width: 100%;
+	position: relative;
+	z-index: 1;
+	overflow-x: hidden; 
+}
+    </style>
+</head>
+<body>
+    <div id="drawer-right">
+        <div class="cross text-right">
+            <a class="toggleDrawer" href="#"><i class="fa fa-times-circle fa-2x"></i></a>
+        </div>
+        <h2>Navigate</h2>
+        <ul class="nav nav-pills nav-stacked">
+            <li>
+                <a href="/"><i class="fa fa-home"></i> Logout</a>
+            </li>
+            <li>
+                <a href="{% url 'user_messages' %}"><i class="fa fa-envelope"></i> Messages</a>
+            </li>
+            <li>
+                <a href="{% url 'view_requests' %}"><i class="fa fa-book"></i> View Requests</a>
+            </li>
+            <li>
+                <a href="{% url 'user_my_bookings' %}"><i class="fa fa-book"></i> My Bookings</a>
+            </li>
+        </ul>
+        <div class="social">
+            <h2>Stay Connected</h2>
+            <ul>
+                <li><a href=""><i class="fa fa-facebook-square fa-3x"></i></a></li>
+                <li><a href=""><i class="fa fa-twitter-square fa-3x"></i></a></li>
+                <li><a href=""><i class="fa fa-tumblr-square fa-3x"></i></a></li>
+                <li><a href=""><i class="fa fa-google-plus-square fa-3x"></i></a></li>
+            </ul>
+        </div>
+    </div><!-- #drawer-right -->
+
+    <div id="wrapper">
+        <div id="header" class="content-block header-wrapper">
+            <div class="header-wrapper-inner">
+                <section class="top clearfix">
+                    <div class="pull-left">
+                        <h1><a class="logo" href="/">Welcome {{ user.username }}</a></h1>
+                    </div>
+                    <div class="pull-right">
+                        <a class="toggleDrawer" href="#"><i class="fa fa-bars fa-2x"></i></a>
+                    </div>
+                </section>
+                <section class="center">
+                    <div class="slogan">BOOK Your EVENT SPOT</div>
+                    <div class="secondary-slogan">Book your event slots for your favorite auditorium</div>
+                </section>
+            </div>
+        </div>
+
+        <!-- Auditorium List -->
+        <div class="auditorium-container">
+            {% if auditoriums %}
+                {% for auditorium in auditoriums %}
+                <div class="auditorium-tile">
+                    {% if auditorium.images %}
+                        <img src="{{ auditorium.images.url }}" alt="Image of {{ auditorium.user.username }}">
+                    {% else %}
+                        <img src="../static/images/blue_mac2.jpg" alt="Default Image">
+                    {% endif %}
+                    <h3>{{ auditorium.user.username }}</h3>
+                    <p>Price: {{ auditorium.price }}</p>
+                    <a href="{% url 'auditorium_list' auditorium.id %}" class="view-details" data-auditorium-id="{{ auditorium.id }}">View Details</a>
+                    <!-- No need for booking details here -->
+                </div>
+                {% endfor %}
+            {% else %}
+                <p>No auditoriums available.</p>
+            {% endif %}
+        </div>
+
+        <div class="content-block" id="contact">
+            <div class="container text-center">
+                <header class="block-heading cleafix">
+                    <h1>Contact Us</h1>
+                    <p>Feel free to drop us a line.</p>
+                </header>
+                <section class="block-body">
+                    <div class="row">
+                        <div class="col-md-6 col-md-offset-3">
+                            <p>+91 9876543212</p>
+                            <a href="www.ievent.com">www.ievent.com</a>
+                            <p>2nd Floor Nila Building Technopark Kazhakuttom Trivandrum</p>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+
+        <div class="content-block" id="footer">
+            <div class="container">
+                <div class="row">
+                    <div class="col-xs-6">&copy; Copyright 2024</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../static/js/jquery-2.1.3.min.js"></script>
+	<script src="../static/js/jquery-migrate-1.2.1.min.js"></script>
+	<script src="../static/js/bootstrap.min.js"></script>
+	<script src="../static/js/jquery.actual.min.js"></script>
+	<script src="../static/js/jquery.scrollTo.min.js"></script>
+	<script src="../static/js/script.js"></script>
+    <script>
+        // JavaScript for handling booking dates
+        var bookedDates = {};
+        var currentYear = new Date().getFullYear();
+        var currentMonth = new Date().getMonth();
+
+        function generateCalendar(auditoriumId, year, month) {
+            var firstDay = new Date(year, month).getDay();
+            var lastDate = new Date(year, month + 1, 0).getDate();
+            var calendarBody = document.querySelector('#calendar-' + auditoriumId + ' tbody');
+            calendarBody.innerHTML = '';
+
+            var date = 1;
+            for (var i = 0; i < 6; i++) {
+                var row = document.createElement('tr');
+
+                for (var j = 0; j < 7; j++) {
+                    var cell = document.createElement('td');
+                    if (i === 0 && j < firstDay) {
+                        var cellText = document.createTextNode('');
+                        cell.appendChild(cellText);
+                        row.appendChild(cell);
+                    } else if (date > lastDate) {
+                        break;
+                    } else {
+                        var cellText = document.createTextNode(date);
+                        cell.appendChild(cellText);
+
+                        var dateString = year + '-' + String(month + 1).padStart(2, '0') + '-' + String(date).padStart(2, '0');
+                        if (bookedDates[dateString]) {
+                            cell.classList.add('booked');
+                            cell.onclick = (function(dateString) {
+                                return function() {
+                                    alert('This date is already booked.');
+                                }
+                            })(dateString);
+                        } else if (new Date(year, month, date) < new Date()) {
+                            cell.classList.add('past-date');
+                        } else {
+                            cell.onclick = (function(dateString) {
+                                return function() {
+                                    handleDateClick(auditoriumId, dateString);
+                                }
+                            })(dateString);
+                        }
+                        if (new Date().toDateString() === new Date(year, month, date).toDateString()) {
+                            cell.classList.add('today');
+                        }
+
+                        row.appendChild(cell);
+                        date++;
+                    }
+                }
+                calendarBody.appendChild(row);
+            }
+        }
+
+        function handleDateClick(auditoriumId, dateString) {
+            if (bookedDates[dateString]) {
+                alert('This date is already booked.');
+            } else {
+                var confirmBooking = confirm(`Do you want to book ${dateString}?`);
+                if (confirmBooking) {
+                    sendBookingRequest(auditoriumId, dateString);
+                }
+            }
+        }
+        function bookDate(auditoriumId) {
+            var datePicker = document.getElementById('datePicker-' + auditoriumId);
+            var selectedDate = new Date(datePicker.value);
+            currentYear = selectedDate.getFullYear();
+            currentMonth = selectedDate.getMonth();
+            generateCalendar(auditoriumId, currentYear, currentMonth);
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            var viewDetailsLinks = document.querySelectorAll('.view-details');
+            viewDetailsLinks.forEach(function(link) {
+                link.addEventListener('click', function(event) {
+                    var auditoriumId = event.target.getAttribute('data-auditorium-id');
+                    var bookingDetails = document.getElementById('booking-details-' + auditoriumId);
+                    bookingDetails.style.display = 'block';
+                    generateCalendar(auditoriumId, currentYear, currentMonth);
+                });
+            });
+        });
+    </script>
+</body>
+</html>

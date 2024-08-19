@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Schedules</title>
+    <style>
+        /* CSS for calendar */
+        .calendar {
+            font-family: Arial, sans-serif;
+            border-collapse: collapse;
+            width: 70%;
+            margin: 20px auto;
+            font-size: 18px; /* Increased font size */
+        }
+        .calendar th, .calendar td {
+            border: 1px solid #dddddd;
+            text-align: center;
+            padding: 20px; /* Increased padding */
+            height: 40px; /* Increased cell height */
+        }
+        .calendar th {
+            background-color: #f2f2f2;
+        }
+        .today {
+            background-color: #ffff99; /* Light yellow background for today's date */
+            font-weight: bold; /* Bold text for today's date */
+            border-radius: 50%; /* Round the corners for today's date */
+        }
+        .back-btn {
+            display: inline-block;
+            background: #333;
+            color: #fff;
+            padding: 10px 20px;
+            text-decoration: none;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+            margin-left: 20px;
+        }
+        .back-btn:hover {
+            background-color: rgb(180, 180, 180);
+            color: #333;
+        }
+        .date-picker-container {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .date-picker-container label, .date-picker-container input, .date-picker-container button {
+            font-size: 16px;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Event Schedules</h1>
+
+    <div class="date-picker-container">
+        <label for="datePicker">Choose Your Date: </label>
+        <input type="date" id="datePicker">
+        <button onclick="jumpToDate()">Enter</button>
+    </div>
+
+    <table id="calendar" class="calendar">
+        <thead>
+            <tr>
+                <th>Sun</th>
+                <th>Mon</th>
+                <th>Tue</th>
+                <th>Wed</th>
+                <th>Thu</th>
+                <th>Fri</th>
+                <th>Sat</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Calendar dates will be dynamically generated here -->
+        </tbody>
+    </table>
+
+    <a class="back-btn" href="{% url 'user_index' %}">Back</a>
+
+    <script>
+        // Function to generate and display calendar
+        function generateCalendar(year, month) {
+            var table = document.getElementById('calendar').getElementsByTagName('tbody')[0];
+            table.innerHTML = '';
+
+            var today = new Date();
+            var currentYear = today.getFullYear();
+            var currentMonth = today.getMonth();
+            var currentDate = today.getDate();
+
+            var firstDay = new Date(year, month, 1);
+            var lastDay = new Date(year, month + 1, 0);
+            var numDays = lastDay.getDate();
+
+            var date = 1;
+            for (var i = 0; i < 6; i++) { // 6 rows for weeks in a month
+                var row = table.insertRow();
+                for (var j = 0; j < 7; j++) {
+                    if (i === 0 && j < firstDay.getDay()) {
+                        // Blank cells before the first day of the month
+                        var cell = row.insertCell();
+                        cell.textContent = '';
+                    } else if (date > numDays) {
+                        // Blank cells after the last day of the month
+                        var cell = row.insertCell();
+                        cell.textContent = '';
+                    } else {
+                        var cell = row.insertCell();
+                        cell.textContent = date;
+                        if (year === currentYear && month === currentMonth && date === currentDate) {
+                            // Highlight today's date with a different class
+                            cell.classList.add('today');
+                        }
+                        date++;
+                    }
+                }
+            }
+        }
+
+        // Function to jump to selected date
+        function jumpToDate() {
+            var selectedDate = new Date(document.getElementById('datePicker').value);
+            var year = selectedDate.getFullYear();
+            var month = selectedDate.getMonth();
+            generateCalendar(year, month);
+        }
+
+        // Display current month calendar on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            var today = new Date();
+            var year = today.getFullYear();
+            var month = today.getMonth();
+            generateCalendar(year, month);
+        });
+    </script>
+</body>
+</html>

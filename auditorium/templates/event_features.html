@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        /* General Styles */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        .container {
+            width: 80%;
+            margin: auto;
+            overflow: hidden;
+        }
+        h1, h2 {
+            background-color: #333;
+            color: #fff;
+            padding: 10px 0;
+            text-align: center;
+        }
+        form {
+            margin: 20px 0;
+            padding: 20px;
+            background: #fff;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        button {
+            display: inline-block;
+            background: #333;
+            color: #fff;
+            padding: 10px 20px;
+            text-decoration: none;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #555;
+        }
+        a {
+            display: inline-block;
+            background: #f4f4f4;
+            color: #333;
+            padding: 10px 20px;
+            text-decoration: none;
+            border: 1px solid #333;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        a:hover {
+            background: #ddd;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        li {
+            background: #fff;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        li input[type="checkbox"] {
+            margin-right: 10px;
+        }
+        .back-btn {
+            background-color: #555;
+            margin-bottom: 30px;
+        }
+        .back-btn:hover {
+            background-color: #ddd;
+        }
+        /* Navbar Styles */
+        nav {
+            background-color: #333;
+            padding: 10px 0;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        nav ul {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            text-align: right;
+        }
+
+        nav ul li {
+            display: inline;
+            float: right;
+            margin-right: 20px;
+        }
+
+        nav ul li a {
+            display: block;
+            color: #555;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+
+        nav ul li a:hover {
+            background-color: #555;
+            transform: scale(1.1);
+            color: rgb(33, 100, 176);
+        }
+
+        nav ul li a:active {
+            background-color: #444;
+            transform: scale(0.95);
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <ul>
+            <li>
+                <a href="/"> Logout</a>
+            </li>
+            <li>
+                <a href="{% url 'event_host_index' %}"> Home</a>
+            </li>
+            <li>
+                <a href="{% url 'user_requests' %}"> User-Requests</a>
+            </li>
+            <li>
+                <a href="{% url 'event_my_bookings' %}"> My Bookings</a>
+            </li>
+        </ul>
+    </nav>
+    <div class="container">
+        <h1>Manage Features for {{ auditorium.user.username }}</h1>
+        
+        <form method="post">
+            {% csrf_token %}
+            {{ feature_form.as_p }}
+            <button type="submit" name="add_feature">Add Feature</button>
+        </form>
+
+        <h2>Current Features:</h2>
+        <form method="post">
+            {% csrf_token %}
+            <ul>
+                {% for feature in features %}
+                    <li>
+                        <div>
+                            <input type="checkbox" name="feature_ids" value="{{ feature.id }}">
+                            {{ feature.name }} - {{ feature.amount }}
+                        </div>
+                    </li>
+                {% empty %}
+                    <li>No features added yet.</li>
+                {% endfor %}
+            </ul>
+            <button type="submit" name="delete_features">Delete Selected Features</button>
+        </form>
+
+        <hr>
+
+        <h2>Add Image:</h2>
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            {{ image_form.as_p }}
+            <button type="submit" name="add_image">Add Image</button>
+        </form>
+        
+        <h2>Current Images:</h2>
+        <form method="post">
+            {% csrf_token %}
+            <ul>
+                {% for image in images %}
+                    <li>
+                        <div>
+                            <input type="checkbox" name="image_ids" value="{{ image.id }}">
+                            <img src="{{ image.image.url }}" alt="Image" style="max-width: 200px; max-height: 200px;">
+                        </div>
+                    </li>
+                {% empty %}
+                    <li>No images added yet.</li>
+                {% endfor %}
+            </ul>
+            <button type="submit" name="delete_images">Delete Selected Images</button>
+        </form>
+
+        <a class="back-btn" href="{% url 'event_host_index' %}">Back</a>
+    </div>
+</body>
+</html>
