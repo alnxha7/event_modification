@@ -47,6 +47,7 @@ urlpatterns = [
     path('user/messages/', views.user_messages, name='user_messages'),
     path('payment_form/<int:request_id>/', views.payment_form, name='payment_form'),
     path('process_payment/<int:request_id>/', views.process_payment, name='process_payment'),
+    path('payment/advance/<int:request_id>/', views.pay_advance, name='pay_advance'),
     path('cancel_payment/<int:request_id>/', views.cancel_payment, name='cancel_payment'),
     path('success/', views.success_page, name='success'),
 

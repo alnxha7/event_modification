@@ -4,9 +4,9 @@ from django.contrib import messages
 from django.contrib.auth import login as auth_login, authenticate, get_user_model
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
-from django.http import JsonResponse, HttpResponseBadRequest
+from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
-from .models import User, Auditorium, Feature, AuditoriumImage, Booking, UserRequest, BookingHistory, Feedback
+from .models import User, Auditorium, Feature, AuditoriumImage, Booking, UserRequest, BookingHistory, Feedback, AdvancePayment
 import stripe
 import json
 import logging
@@ -407,6 +407,14 @@ def process_payment(request, request_id):
             # Retrieve the user request record
             user_request = UserRequest.objects.get(id=request_id)
 
+            advance_payment = AdvancePayment.objects.filter(user_request=user_request).first()
+
+            if advance_payment:
+                # Deduct the advance payment amount from the final price
+                final_price = user_request.final_price - advance_payment.amount_paid
+            else:
+                final_price = user_request.final_price
+
             # Create a new entry in BookingHistory
             features_selected = ", ".join([feature.name for feature in user_request.features.all()])
             BookingHistory.objects.create(
@@ -530,17 +538,142 @@ def feedback(request, booking_id):
     
 def cancel_booking(request, booking_id):
     booking = get_object_or_404(BookingHistory, id=booking_id)
+
+    if booking.is_canceled:
+        messages.info(request, 'This booking has already been canceled.')
+        return redirect('user_my_bookings')
+
     
     # Calculate refund and auditorium earnings
-    refund_amount = booking.final_price * Decimal('0.98')
+    refund_amount = booking.final_price * 98 / 100
     auditorium_earnings = booking.final_price * Decimal('0.02')
 
     # Update the final_price to reflect the refund
     booking.final_price = refund_amount
     booking.is_canceled = True
+    booking.admin_amount = Decimal('0.00')
     booking.save()
 
     # Optional: You can display a message to the user
     messages.success(request, f'Booking canceled. You have been refunded {refund_amount}. The auditorium earns {auditorium_earnings}.')
 
     return redirect('user_my_bookings')      
+
+@login_required
+def process_advance_payment(request, request_id):
+    try:
+        user_request = get_object_or_404(UserRequest, id=request_id, user=request.user)
+        advance_amount = user_request.final_price * Decimal('0.10')  # Calculate 10% advance payment
+    except UserRequest.DoesNotExist:
+        messages.error(request, "User Request not found.")
+        return redirect('user_messages')
+
+    if request.method == 'POST':
+        # Assuming you have a form or payment processing logic here
+        # You can include Stripe or any payment gateway logic as needed
+
+        # For simplicity, let's assume payment is successful
+        user_request.advance_paid = True
+        user_request.advance_amount = advance_amount
+        user_request.save()
+
+        # Redirect to a success page or back to messages
+        messages.success(request, f"Advance payment of {advance_amount} processed successfully.")
+        return redirect('user_messages')
+
+    context = {
+        'user_request': user_request,
+        'advance_amount': advance_amount,
+    }
+    return render(request, 'advance_payment_form.html', context)
+
+@login_required
+@csrf_exempt
+def pay_advance(request, request_id):
+    user_request = get_object_or_404(UserRequest, id=request_id, user=request.user)
+    advance_amount = user_request.final_price * Decimal('0.10')
+
+    if request.method == 'POST':
+        card_number = request.POST.get('card_number')
+        cvv = request.POST.get('cvv')
+
+        # Validate card number and CVV
+        if len(card_number) != 16 or not card_number.isdigit():
+            messages.error(request, "Card number must be exactly 16 digits.")
+            return render(request, 'advance_payment_form.html', {
+                'user_request': user_request,
+                'request_id': request_id,
+                'advance_amount': advance_amount,
+                'error_message': "Card number must be exactly 16 digits."
+            })
+
+        if len(cvv) != 3 or not cvv.isdigit():
+            messages.error(request, "CVV must be exactly 3 digits.")
+            return render(request, 'advance_payment_form.html', {
+                'user_request': user_request,
+                'request_id': request_id,
+                'advance_amount': advance_amount,
+                'error_message': "CVV must be exactly 3 digits."
+            })
+
+        # Check if an AdvancePayment already exists for this user request
+        if AdvancePayment.objects.filter(user_request=user_request).exists():
+            messages.error(request, "Advance payment has already been processed for this request.")
+            return render(request, 'advance_payment_form.html', {
+                'user_request': user_request,
+                'request_id': request_id,
+                'advance_amount': advance_amount,
+                'error_message': "Advance payment has already been processed for this request."
+            })
+
+        try:
+            # Create the advance payment entry
+            AdvancePayment.objects.create(
+                user_request=user_request,
+                amount_paid=advance_amount,
+                card_number=card_number,
+                cvv=cvv
+            )
+            
+            # Create the Booking instance
+            Booking.objects.create(
+                auditorium=user_request.auditorium,
+                user=user_request.user,
+                date=user_request.date
+            )
+
+            # Create the BookingHistory instance
+            BookingHistory.objects.create(
+                auditorium=user_request.auditorium,
+                user=user_request.user,
+                date_booked=user_request.date,
+                features_selected=', '.join([feature.name for feature in user_request.features.all()]),
+                final_price=user_request.final_price,
+                card_number=card_number,
+                cvv=cvv,
+                admin_amount=user_request.final_price * Decimal('0.15'),
+                is_canceled=False
+            )
+            
+            # Delete the UserRequest after successful payment and booking creation
+            user_request.delete()
+
+            # Redirect to a success page or back to the user requests page
+            messages.success(request, f"Advance payment of {advance_amount} processed successfully. Booking confirmed.")
+            return redirect('success')
+        except Exception as e:
+            # Handle any unexpected errors
+            messages.error(request, f"An error occurred: {str(e)}")
+            return render(request, 'advance_payment_form.html', {
+                'user_request': user_request,
+                'request_id': request_id,
+                'advance_amount': advance_amount,
+                'error_message': f"An error occurred: {str(e)}"
+            })
+
+    # Render the payment form if GET request
+    return render(request, 'advance_payment_form.html', {
+        'user_request': user_request,
+        'request_id': request_id,
+        'advance_amount': advance_amount
+    })

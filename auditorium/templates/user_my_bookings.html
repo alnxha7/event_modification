@@ -50,6 +50,15 @@
     {% include 'user_navbar.html' %}
     <div class="container">
         <h2>My Bookings</h2>
+        {% if messages %}
+            <div id="alert-container">
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}" role="alert">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
         <table class="table table-striped">
             <thead>
                 <tr>
@@ -74,10 +83,10 @@
                         <td>
                             {% if booking.date_booked <= today %}
                                 <button class="btn btn-primary" onclick="showFeedbackForm({{ booking.id }})">Feedback</button>
-                            {% elif booking.is_canceled %}
-                                <span class="text-muted">Booking Canceled</span>
                             {% elif booking.date_booked > today %}
                                 <button class="btn btn-danger" onclick="cancelBooking({{ booking.id }})">Cancel</button>
+                            {% elif booking.is_canceled %}
+                                <span>Booking cancelled</span>
                             {% endif %}
                         </td>
                     </tr>

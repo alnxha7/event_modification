@@ -109,6 +109,7 @@
                     <td>
                         <a href="{% url 'payment_form' request.id %}" class='pay-btn'>Pay Now</a>
                         <a href="{% url 'cancel_payment' request.id %}" class="cancel-btn">Cancel</a>
+                        <a href="{% url 'pay_advance' request.id %}" class="pay-btn">Pay Advance</a>
                     </td>
                 </tr>
                 {% endfor %}

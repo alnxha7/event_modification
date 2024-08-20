@@ -82,6 +82,16 @@ class UserRequest(models.Model):
     stripe_payment_intent_id = models.CharField(max_length=255, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
+class AdvancePayment(models.Model):
+    user_request = models.OneToOneField(UserRequest, on_delete=models.CASCADE)
+    amount_paid = models.DecimalField(max_digits=10, decimal_places=2)
+    payment_date = models.DateTimeField(auto_now_add=True)
+    card_number = models.CharField(max_length=16)
+    cvv = models.CharField(max_length=4)
+
+    def __str__(self):
+        return f"Advance payment for request {self.user_request.id}"
+
 class BookingHistory(models.Model):
     auditorium = models.ForeignKey(Auditorium, on_delete=models.CASCADE)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
@@ -97,6 +107,8 @@ class BookingHistory(models.Model):
     def save(self, *args, **kwargs):
         if self.final_price is not None:
             self.admin_amount = self.final_price * Decimal('0.15')
+        elif self.is_canceled:
+            self.admin_amount = Decimal('0.00')
         super().save(*args, **kwargs)
 
     @property
