@@ -120,6 +120,7 @@ class BookingHistory(models.Model):
     
 class Feedback(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+    auditorium = models.ForeignKey(Auditorium, on_delete=models.CASCADE)
     booking = models.ForeignKey('Booking', on_delete=models.CASCADE)
     feedback_text = models.TextField()
     rating = models.PositiveIntegerField()

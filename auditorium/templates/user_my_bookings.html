@@ -1,56 +1,56 @@
-<!DOCTYPE html>
-<html lang="en-US">
-<head>
-    <title>My Bookings</title>
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
-    <link rel='stylesheet' href='http://fonts.googleapis.com/css?family=PT+Sans'>
-    <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Droid+Serif:regular,bold"/>
-    <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Alegreya+Sans:regular,italic,bold,bolditalic"/>
-    <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Nixie+One:regular,italic,bold,bolditalic"/>
-    <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Alegreya+SC:regular,italic,bold,bolditalic"/>
-    <link rel="stylesheet" href="../static/css/bootstrap.min.css">
-    <link rel="stylesheet" href="../static/css/font-awesome.min.css">
-    <link rel="stylesheet" href="../static/css/style.css" media="screen"/>
-    <style>
-        .feedback-form {
-            display: none;
-            margin-top: 10px;
-            border: 1px solid #ddd;
-            padding: 10px;
-            border-radius: 5px;
-            background-color: #f9f9f9;
-        }
-        .rating-stars {
-            font-size: 24px;
-            color: #FFD700;
-        }
-        .rating-stars input {
-            display: none;
-        }
-        .rating-stars label {
-            cursor: pointer;
-            display: inline-block;
-            color: #ddd;
-        }
-        .rating-stars label:before {
-            content: '★';
-        }
-        .rating-stars input:checked ~ label {
-            color: #FFD700;
-        }
-        .rating-stars label:hover,
-        .rating-stars label:hover ~ label {
-            color: #FFD700;
-        }
-    </style>
-</head>
-<body>
-    {% include 'user_navbar.html' %}
-    <div class="container">
-        <h2>My Bookings</h2>
-        {% if messages %}
+    <!DOCTYPE html>
+    <html lang="en-US">
+    <head>
+        <title>My Bookings</title>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+        <link rel='stylesheet' href='http://fonts.googleapis.com/css?family=PT+Sans'>
+        <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Droid+Serif:regular,bold"/>
+        <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Alegreya+Sans:regular,italic,bold,bolditalic"/>
+        <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Nixie+One:regular,italic,bold,bolditalic"/>
+        <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Alegreya+SC:regular,italic,bold,bolditalic"/>
+        <link rel="stylesheet" href="../static/css/bootstrap.min.css">
+        <link rel="stylesheet" href="../static/css/font-awesome.min.css">
+        <link rel="stylesheet" href="../static/css/style.css" media="screen"/>
+        <style>
+            .feedback-form {
+                display: none;
+                margin-top: 10px;
+                border: 1px solid #ddd;
+                padding: 10px;
+                border-radius: 5px;
+                background-color: #f9f9f9;
+            }
+            .rating-stars {
+                font-size: 24px;
+                color: #FFD700;
+            }
+            .rating-stars input {
+                display: none;
+            }
+            .rating-stars label {
+                cursor: pointer;
+                display: inline-block;
+                color: #ddd;
+            }
+            .rating-stars label:before {
+                content: '★';
+            }
+            .rating-stars input:checked ~ label {
+                color: #FFD700;
+            }
+            .rating-stars label:hover,
+            .rating-stars label:hover ~ label {
+                color: #FFD700;
+            }
+        </style>
+    </head>
+    <body>
+        {% include 'user_navbar.html' %}
+        <div class="container">
+            <h2>My Bookings</h2>
+            {% if messages %}
             <div id="alert-container">
                 {% for message in messages %}
                     <div class="alert alert-{{ message.tags }}" role="alert">
@@ -82,29 +82,12 @@
                         <td>{{ booking.final_price }}</td>
                         <td>
                             {% if booking.date_booked <= today %}
-                                <button class="btn btn-primary" onclick="showFeedbackForm({{ booking.id }})">Feedback</button>
+                                <button class="btn btn-primary" onclick="redirectToFeedbackPage({{ booking.id }})">Feedback</button>
                             {% elif booking.date_booked > today %}
                                 <button class="btn btn-danger" onclick="cancelBooking({{ booking.id }})">Cancel</button>
                             {% elif booking.is_canceled %}
                                 <span>Booking cancelled</span>
                             {% endif %}
-                        </td>
-                    </tr>
-                    <tr id="feedback-form-{{ booking.id }}" class="feedback-form">
-                        <td colspan="7">
-                            <h4>Leave Feedback</h4>
-                            <form id="feedback-form-{{ booking.id }}" onsubmit="submitFeedbackForm({{ booking.id }}); return false;">
-                                {% csrf_token %}
-                                <div class="rating-stars">
-                                    <input type="radio" id="star5-{{ booking.id }}" name="rating-{{ booking.id }}" value="5"/><label for="star5-{{ booking.id }}"></label>
-                                    <input type="radio" id="star4-{{ booking.id }}" name="rating-{{ booking.id }}" value="4"/><label for="star4-{{ booking.id }}"></label>
-                                    <input type="radio" id="star3-{{ booking.id }}" name="rating-{{ booking.id }}" value="3"/><label for="star3-{{ booking.id }}"></label>
-                                    <input type="radio" id="star2-{{ booking.id }}" name="rating-{{ booking.id }}" value="2"/><label for="star2-{{ booking.id }}"></label>
-                                    <input type="radio" id="star1-{{ booking.id }}" name="rating-{{ booking.id }}" value="1"/><label for="star1-{{ booking.id }}"></label>
-                                </div>
-                                <textarea id="feedback-text-{{ booking.id }}" name="feedback_text" rows="4" cols="50" placeholder="Enter your feedback here"></textarea><br>
-                                <button class="btn btn-success" type="button" onclick="submitFeedbackForm({{ booking.id }})">Submit</button>
-                            </form>
                         </td>
                     </tr>
                 {% empty %}
@@ -114,78 +97,22 @@
                 {% endfor %}
             </tbody>
         </table>
-    </div>
+        </div>
 
-    <script>
-        // Function to get CSRF token from hidden input field
-        function getCsrfToken() {
-            const csrfTokenElement = document.getElementById('csrf-token');
-            return csrfTokenElement ? csrfTokenElement.value : '';
-        }
-    
-        function showFeedbackForm(bookingId) {
-            console.log('Showing feedback form for booking:', bookingId);
-            const feedbackForm = document.getElementById('feedback-form-' + bookingId);
-            if (feedbackForm) {
-                feedbackForm.style.display = 'block';
-            } else {
-                console.error('Feedback form not found for booking ID:', bookingId);
+        <script>
+            function cancelBooking(bookingId) {
+                const userConfirmedLoss = confirm('You will lose 2% from the total booking amount...!!!');
+                if (userConfirmedLoss) {
+                    const userConfirmedCancel = confirm('Are you sure you want to cancel?');
+                    if (userConfirmedCancel) {
+                        window.location.href = "{% url 'cancel_booking' 0 %}".replace('0', bookingId);
+                    }
+                }
             }
-        }
     
-        function cancelBooking(bookingId) {
-    // Show confirmation dialog
-    const userConfirmedLoss = confirm('You will lose 2% from the total booking amount...!!!');
-    if (userConfirmedLoss) {
-        const userConfirmedCancel = confirm('Are you sure you want to cancel?');
-        if (userConfirmedCancel) {
-            console.log('Cancelling booking with ID:', bookingId);
-            window.location.href = "{% url 'cancel_booking' 0 %}".replace('0', bookingId);
-        }
-    }
-}
-    
-        function submitFeedbackForm(bookingId) {
-    console.log('submitFeedbackForm called for booking ID:', bookingId);
-
-    const feedbackText = document.getElementById('feedback-text-' + bookingId).value;
-    const rating = document.querySelector('input[name="rating-' + bookingId + '"]:checked')?.value;
-    const csrfToken = getCsrfToken();  // Ensure this function correctly retrieves the CSRF token
-    const userId = '{{ user.id }}';  // Make sure this is properly passed from Django context
-
-    if (!feedbackText || !rating) {
-        alert('Please provide both feedback and rating.');
-        return;
-    }
-
-    fetch("{% url 'feedback' 0 %}".replace('0', bookingId), {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'X-CSRFToken': csrfToken
-        },
-        body: new URLSearchParams({
-            'feedback_text': feedbackText,
-            'rating': rating,
-            'user_id': userId
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            alert('Feedback submitted successfully!');
-            document.getElementById('feedback-form-' + bookingId).style.display = 'none';
-        } else {
-            alert('Failed to submit feedback: ' + data.message);
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('An error occurred while submitting feedback.');
-    });
-}
-    </script>
-    
-        
-</body>
-</html>
+            function redirectToFeedbackPage(bookingId) {
+                window.location.href = "{% url 'feedback' 0 %}".replace('0', bookingId);
+            }
+        </script>
+    </body>
+    </html>

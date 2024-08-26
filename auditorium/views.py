@@ -249,8 +249,11 @@ def user_bookings(request):
 def auditorium_list(request, auditorium_id):
     auditorium = Auditorium.objects.get(id=auditorium_id)
     features = auditorium.auditorium_features.all()
+
     audi = get_object_or_404(Auditorium, id=auditorium_id)
-    feedbacks = Feedback.objects.filter(booking__in=Booking.objects.filter(auditorium=audi))
+    
+    # Get all feedbacks related to this auditorium
+    feedbacks = Feedback.objects.filter(auditorium=audi)
 
     context = {
         'auditorium': auditorium,
@@ -307,7 +310,7 @@ def auditorium_details(request, auditorium_id):
 
 @login_required
 def user_requests(request):
-    requests = UserRequest.objects.filter(auditorium__user=request.user)
+    requests = UserRequest.objects.filter(auditorium__user=request.user, approved=False, rejected=False)
     context = {
         'requests': requests
     }
@@ -508,42 +511,33 @@ def view_requests(request):
 
 @login_required
 def feedback(request, booking_id):
+    booking = get_object_or_404(Booking, id=booking_id)
+
     if request.method == 'POST':
         feedback_text = request.POST.get('feedback_text')
         rating = request.POST.get('rating')
-        user_id = request.POST.get('user_id')
 
-        # Check if the booking exists
-        booking = Booking.objects.filter(id=booking_id).first()
-        if not booking:
-            return JsonResponse({'success': False, 'message': 'Booking does not exist.'})
+        # Validate the input
+        if not feedback_text or not rating:
+            messages.error(request, "Please provide both feedback and rating.")
+            return render(request, 'feedback.html', {'booking': booking})
 
-        # Check if the user exists
-        if not User.objects.filter(id=user_id).exists():
-            return JsonResponse({'success': False, 'message': 'User does not exist.'})
+        # Save the feedback
+        feedback = Feedback.objects.create(
+            user=booking.user,
+            booking=booking,
+            auditorium=booking.auditorium,  # Assuming auditorium is linked to the booking
+            feedback_text=feedback_text,
+            rating=rating
+        )
+        messages.success(request, "Thank you for your feedback!")
+        return redirect('user_my_bookings')
 
-        try:
-            feedback = Feedback(
-                user_id=user_id,
-                booking_id=booking_id,
-                feedback_text=feedback_text,
-                rating=rating
-            )
-            feedback.save()
-            return JsonResponse({'success': True})
-        except Exception as e:
-            return JsonResponse({'success': False, 'message': str(e)})
-
-    return JsonResponse({'success': False, 'message': 'Invalid request method.'})
+    return render(request, 'feedback.html', {'booking': booking})
     
 def cancel_booking(request, booking_id):
     booking = get_object_or_404(BookingHistory, id=booking_id)
-
-    if booking.is_canceled:
-        messages.info(request, 'This booking has already been canceled.')
-        return redirect('user_my_bookings')
-
-    
+   
     # Calculate refund and auditorium earnings
     refund_amount = booking.final_price * 98 / 100
     auditorium_earnings = booking.final_price * Decimal('0.02')
@@ -648,7 +642,7 @@ def pay_advance(request, request_id):
                 user=user_request.user,
                 date_booked=user_request.date,
                 features_selected=', '.join([feature.name for feature in user_request.features.all()]),
-                final_price=user_request.final_price,
+                final_price=advance_amount,
                 card_number=card_number,
                 cvv=cvv,
                 admin_amount=user_request.final_price * Decimal('0.15'),
