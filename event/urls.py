@@ -55,4 +55,5 @@ urlpatterns = [
     path('user_my_bookings/', views.user_my_bookings, name='user_my_bookings'),
     path('feedback/<int:booking_id>/', views.feedback, name='feedback'),
     path('cancel_booking/<int:booking_id>/', views.cancel_booking, name='cancel_booking'),
+    path('validate_email/', views.validate_email, name='validate_email'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

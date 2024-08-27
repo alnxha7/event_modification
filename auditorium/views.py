@@ -671,3 +671,11 @@ def pay_advance(request, request_id):
         'request_id': request_id,
         'advance_amount': advance_amount
     })
+
+
+def validate_email(request):
+    email = request.GET.get('email', None)
+    data = {
+        'is_taken': User.objects.filter(email=email).exists()
+    }
+    return JsonResponse(data)
